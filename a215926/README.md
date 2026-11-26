@@ -32,7 +32,7 @@ hard as a known open problem. The proofs are short and elementary.
 | --- | --- |
 | `A215926.lean` | Lean 4 formalization of all the results above (about 800 lines) |
 | `almost_perfect_search.c` | Search for almost perfect numbers up to `10^16` |
-| `paper/a215926.tex`, `paper/a215926.pdf` | Manuscript with human-readable proofs |
+| `paper/a215926.tex`, `paper/a215926.pdf` | Manuscript by Hao Li, with human-readable proofs |
 
 ## Checking the proof
 
