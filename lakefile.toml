@@ -1,0 +1,12 @@
+name = "lean-open-problems"
+defaultTargets = ["A215926"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.36.0"
+
+# One library per result. Each lives in its own directory.
+[[lean_lib]]
+name = "A215926"
+srcDir = "a215926"

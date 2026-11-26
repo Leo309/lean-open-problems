@@ -1,0 +1,532 @@
+% TECHNICAL DRAFT. The text of this draft was written by an AI system (Claude).
+% Before submitting anywhere, the author must read and check everything, and
+% must follow the venue's rules on AI use. In particular the Journal of Integer
+% Sequences does not accept text written by an LLM: for that venue the prose
+% must be rewritten by the author in the author's own words, with the role of
+% the AI system described in detail in the paper.
+\documentclass[12pt,reqno]{article}
+
+\usepackage[usenames]{color}
+\usepackage{amssymb,amsmath,amsthm,amsfonts}
+\usepackage[colorlinks=true,linkcolor=webgreen,filecolor=webbrown,citecolor=webgreen,urlcolor=webgreen]{hyperref}
+\definecolor{webgreen}{rgb}{0,.5,0}
+\definecolor{webbrown}{rgb}{.6,0,0}
+
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{.1in}
+\setlength{\evensidemargin}{.1in}
+\setlength{\topmargin}{-.1in}
+\setlength{\textheight}{8.4in}
+
+\newcommand{\seqnum}[1]{\href{https://oeis.org/#1}{\rm \underline{#1}}}
+\newcommand{\lean}[1]{\texttt{#1}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}{Conjecture}
+\theoremstyle{definition}
+\newtheorem*{definition}{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+
+\begin{center}
+\vskip 1cm{\LARGE\bf
+A Conjecture on the Least Deficient\\
+\vskip .1in
+Multiplier Is Equivalent to the\\
+\vskip .1in
+Almost Perfect Number Conjecture}
+\vskip 1cm
+\large
+% TODO(author): full name, affiliation or city, and e-mail address.
+{[AUTHOR NAME]}\\
+{[Affiliation or address]}\\
+{\tt [e-mail]}
+\end{center}
+
+\vskip .2 in
+
+\begin{abstract}
+For $n \ge 2$ let $a(n)$ be the smallest deficient number $k$ such that $kn$ is
+not deficient; this is sequence \seqnum{A215926} in the OEIS. In 2012 Marcus
+conjectured that $a(n)$ is always $1$, $3$, or a power of $2$, and that for
+$m \ge 1$ the value $2^m$ first occurs at the least prime exceeding $2^m$. We
+prove that the first conjecture is \emph{equivalent} to the classical conjecture
+that every almost perfect number (a number $k$ with $\sigma(k) = 2k-1$) is a
+power of $2$, and that the second conjecture follows from it. Unconditionally,
+$a(n) \in \{1,2,3\}$ for even $n$, and for odd $n$ the value $a(n)$ is at most
+$n$ and is either a power of $2$ or an almost perfect number that is not a
+power of $2$. Consequently both conjectures hold in the range covered by any
+search for almost perfect numbers; a computer search up to $10^{16}$ gives the
+first conjecture for all $n \le 10^{16}$ and the second for all $m \le 53$. All
+theorems have been formally verified in Lean~4 with Mathlib; the computer search
+has not. The proofs and the formalization were produced with an AI system,
+as described in the paper.
+\end{abstract}
+
+\section{Introduction}
+
+Let $\sigma(n)$ denote the sum of the positive divisors of $n$, and write
+$h(n) = \sigma(n)/n$ for the abundancy index. A positive integer $n$ is
+\emph{deficient} if $\sigma(n) < 2n$, \emph{perfect} if $\sigma(n) = 2n$, and
+\emph{abundant} if $\sigma(n) > 2n$; we call $n$ \emph{non-deficient} if it is
+perfect or abundant. The deficient numbers form sequence \seqnum{A005100} and
+the non-deficient numbers form sequence \seqnum{A023196} in the On-Line
+Encyclopedia of Integer Sequences (OEIS)~\cite{oeis}.
+
+\begin{definition}
+For an integer $n \ge 2$ let
+\[
+  T(n) = \{\, k \ge 1 : k \text{ is deficient and } kn \text{ is non-deficient} \,\},
+  \qquad a(n) = \min T(n).
+\]
+\end{definition}
+
+We show below that $T(n)$ is nonempty for every $n \ge 2$, so $a(n)$ is well
+defined. The sequence $(a(n))_{n \ge 2}$ is \seqnum{A215926}, contributed to the
+OEIS by Michel Marcus in August 2012. It begins
+\[
+ 3, 2, 3, 4, 1, 4, 3, 2, 2, 8, 1, 8, 2, 2, 3, 16, 1, 16, 1, 2, 3, 16, 1, 4, 3, 2, 1, 16, 1, 16, \ldots
+\]
+The entry records two conjectures. Let $p_m$ denote the least prime greater than
+$2^m$ (sequence \seqnum{A014210}).
+
+\begin{conjecture}[Marcus, \seqnum{A215926}]\label{conj:one}
+For every $n \ge 2$, the number $a(n)$ is $1$, $3$, or a power of $2$.
+\end{conjecture}
+
+\begin{conjecture}[Marcus, \seqnum{A215926}]\label{conj:two}
+For every $m \ge 1$, the least $n \ge 2$ with $a(n) = 2^m$ is $n = p_m$.
+\end{conjecture}
+
+Both statements appear as open research problems in the
+\emph{formal-conjectures} repository~\cite{fc}, a collection of formalized
+statements of open problems, and we use the formal statements given there.
+
+A positive integer $k$ is \emph{almost perfect} if $\sigma(k) = 2k-1$. Every
+power of $2$ is almost perfect, since $\sigma(2^j) = 2^{j+1}-1$. Whether there
+are others is a well-known open problem \cite[Section B2]{guy}.
+
+\begin{conjecture}[Almost perfect number conjecture]\label{conj:ap}
+Every almost perfect number is a power of $2$.
+\end{conjecture}
+
+We call an almost perfect number that is not a power of $2$ \emph{exotic}.
+Kishore~\cite{kishore78,kishore81} showed that an odd exotic almost perfect
+number has at least six distinct prime factors, and Antalan and
+Dris~\cite{antalan-dris} obtained restrictions on even ones; see also
+\cite{dris}. Our results are the following.
+
+\begin{theorem}\label{thm:structure}
+Let $n \ge 2$.
+\begin{itemize}
+\item[(a)] If $n$ is even, then $a(n) \in \{1,2,3\}$.
+\item[(b)] If $n$ is odd, then $a(n) \le 2^{\lfloor \log_2 n \rfloor} \le n$, and
+$a(n)$ is either a power of $2$ or an exotic almost perfect number.
+\end{itemize}
+\end{theorem}
+
+\begin{theorem}\label{thm:equiv}
+Conjecture~\ref{conj:one} holds if and only if Conjecture~\ref{conj:ap} holds.
+More precisely, if $k$ is the least exotic almost perfect number, then there is
+an odd squarefree integer $n$ with $a(n) = k$.
+\end{theorem}
+
+\begin{theorem}\label{thm:two}
+Let $m \ge 1$.
+\begin{itemize}
+\item[(a)] If $n \ge 2$ and $a(n) = 2^m$, then $n \ge p_m$.
+\item[(b)] If there is no exotic almost perfect number less than $2^m$, then
+$a(p_m) = 2^m$.
+\end{itemize}
+In particular, Conjecture~\ref{conj:ap} implies Conjecture~\ref{conj:two}.
+\end{theorem}
+
+Thus Conjecture~\ref{conj:one} is exactly as hard as a classical open problem,
+while a counterexample to either conjecture of Marcus would have to come from an
+exotic almost perfect number. Theorems~\ref{thm:structure} and~\ref{thm:two}
+also turn any numerical bound on exotic almost perfect numbers into a range of
+validity. The arguments are short and elementary; the point of this note is the
+link between the two problems.
+
+\begin{corollary}\label{cor:bound}
+Suppose that there is no exotic almost perfect number $k \le N$. Then
+Conjecture~\ref{conj:one} holds for all $2 \le n \le N$, and
+Conjecture~\ref{conj:two} holds for all $m \ge 1$ with $2^m \le N+1$.
+\end{corollary}
+
+A direct search by a C program (Section~\ref{sec:computation}), which is
+outside the formal verification, finds no exotic almost perfect number
+$k \le 10^{16}$. Hence Conjecture~\ref{conj:one} holds for all
+$n \le 10^{16}$ and Conjecture~\ref{conj:two} holds for all $m \le 53$.
+
+All the theorems above have been formalized and checked in the Lean~4 proof
+assistant~\cite{lean4} using the Mathlib library~\cite{mathlib}; the numerical
+search has not. Details are given in Section~\ref{sec:lean}.
+
+\section{Preliminaries}
+
+We use the following standard facts.
+
+\begin{lemma}\label{lem:sigma}
+Let $k, n, t$ be positive integers.
+\begin{itemize}
+\item[(a)] $\sigma(kn) \le \sigma(k)\sigma(n)$, with equality if $\gcd(k,n)=1$.
+\item[(b)] $\sigma(nt) \ge t\,\sigma(n)$; equivalently $h(nt) \ge h(n)$.
+\item[(c)] $\sigma(2^j) = 2^{j+1}-1$ for $j \ge 0$, and $\sigma(p) = p+1$ for a prime $p$.
+\item[(d)] If $r$ is a divisor of $n$ with $r < n$, then $\sigma(n) \ge n + r$.
+\end{itemize}
+\end{lemma}
+
+\begin{proof}
+(a) Every divisor of $kn$ can be written as $d_1 d_2$ with $d_1 \mid k$ and
+$d_2 \mid n$, so the divisors of $kn$ are among the terms of the expanded
+product $\sigma(k)\sigma(n)$; multiplicativity of $\sigma$ gives the case of
+equality. (b) The numbers $dt$ with $d \mid n$ are distinct divisors of $nt$.
+(c) and (d) are immediate.
+\end{proof}
+
+Since $\sigma(2^j) = 2^{j+1}-1 < 2^{j+1}$, every power of $2$ is deficient. For
+odd $n$, Lemma~\ref{lem:sigma}(a) and (c) give
+\begin{equation}\label{eq:pow2}
+  2^j \in T(n) \iff (2^{j+1}-1)\,\sigma(n) \ge 2^{j+1} n
+  \iff h(n) \ge \frac{2^{j+1}}{2^{j+1}-1}.
+\end{equation}
+
+\section{The structure of \texorpdfstring{$a(n)$}{a(n)}}
+
+\begin{proof}[Proof of Theorem~\ref{thm:structure}(a)]
+Let $n$ be even. Then $6 \mid 3n$, so $h(3n) \ge h(6) = 2$ by
+Lemma~\ref{lem:sigma}(b), and $3n$ is non-deficient. As $3$ is deficient,
+$3 \in T(n)$ and $a(n) \le 3$.
+\end{proof}
+
+The main step is the following lemma.
+
+\begin{lemma}\label{lem:key}
+Let $n \ge 3$ be odd and let $k = a(n)$. If $k$ is not a power of $2$, then
+$\sigma(k) = 2k-1$.
+\end{lemma}
+
+\begin{proof}
+Choose $j \ge 0$ with $2^j < k < 2^{j+1}$. Since $2^j < a(n)$ and $2^j$ is
+deficient, $2^j \notin T(n)$, so by~\eqref{eq:pow2}
+\begin{equation}\label{eq:upper}
+  h(n) < \frac{2^{j+1}}{2^{j+1}-1}.
+\end{equation}
+On the other hand $kn$ is non-deficient, so by Lemma~\ref{lem:sigma}(a)
+\begin{equation}\label{eq:lower}
+  2kn \le \sigma(kn) \le \sigma(k)\,\sigma(n).
+\end{equation}
+Suppose that $\sigma(k) \le 2k-2$. Then \eqref{eq:lower} gives
+$h(n) \ge k/(k-1)$, and with \eqref{eq:upper} we get
+$k/(k-1) < 2^{j+1}/(2^{j+1}-1)$. Since $x \mapsto x/(x-1)$ is decreasing for
+$x > 1$, this forces $k > 2^{j+1}$, a contradiction. Hence $\sigma(k) \ge 2k-1$,
+and since $k$ is deficient, $\sigma(k) = 2k-1$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:structure}(b)]
+Let $n \ge 3$ be odd and put $J = \lfloor \log_2 n \rfloor$, so that
+$n + 1 \le 2^{J+1}$. By Lemma~\ref{lem:sigma}(d), $\sigma(n) \ge n+1$, hence
+\[
+ (2^{J+1}-1)\,\sigma(n) \ge (2^{J+1}-1)(n+1) = 2^{J+1}n + 2^{J+1} - (n+1) \ge 2^{J+1} n ,
+\]
+and $2^J \in T(n)$ by~\eqref{eq:pow2}. Thus $T(n) \neq \emptyset$ and
+$a(n) \le 2^J \le n$. The remaining assertion is Lemma~\ref{lem:key}.
+\end{proof}
+
+Theorem~\ref{thm:structure} shows that Conjecture~\ref{conj:ap} implies
+Conjecture~\ref{conj:one}, and it proves the first half of
+Corollary~\ref{cor:bound}: if $2 \le n \le N$ and no exotic almost perfect number
+is at most $N$, then $a(n) \in \{1,2,3\}$ or $a(n)$ is a power of $2$.
+
+\begin{remark}\label{rem:formula}
+The proof gives an explicit description of $a(n)$. If $n$ is even, then
+$a(n) = 1$ if $n$ is non-deficient, $a(n) = 2$ if $n$ is deficient and $2n$ is
+not, and $a(n) = 3$ otherwise. If $n \ge 3$ is odd and no exotic almost perfect
+number is at most $n$, then by~\eqref{eq:pow2} we have $a(n) = 2^j$, where
+$j \ge 0$ is least with $2^{j+1} \ge \sigma(n)/s(n)$ and
+$s(n) = \sigma(n) - n$. For example $a(11) = 8$ because
+$\sigma(11)/s(11) = 12$.
+\end{remark}
+
+\section{The converse}
+
+\begin{proof}[Proof of Theorem~\ref{thm:equiv}]
+One direction was just proved. For the other, suppose that exotic almost perfect
+numbers exist and let $k$ be the least one. Put $c = \sigma(k) = 2k-1$, choose
+$j$ with $2^j < k < 2^{j+1}$, and put $B = 2^{j+1}-1 = \sigma(2^j)$. Then
+\begin{equation}\label{eq:kBc}
+  k \le B \qquad\text{and}\qquad B + 2 \le c ,
+\end{equation}
+the second because $k \ge 2^j+1$. Note that $k \ge 5$, since $1, 2, 4$ are
+powers of $2$ and $3$ is not almost perfect.
+
+Let $q_1 < q_2 < \cdots$ be the primes that are at least $(c+1)^2$, and let
+$n_t = q_1 q_2 \cdots q_t$, with $n_0 = 1$. By Lemma~\ref{lem:sigma},
+\[
+  h(n_t) = \prod_{i=1}^{t} \Bigl(1 + \frac{1}{q_i}\Bigr) \ge 1 + \sum_{i=1}^{t} \frac{1}{q_i},
+\]
+which is unbounded because the sum of the reciprocals of the primes
+diverges~\cite[Theorem 19]{hw}. Since $h(n_0) = 1 < (c+1)/c$, there is a least
+$t \ge 1$ with $h(n_t) \ge (c+1)/c$. Put $n = n_t$ and $q = q_t$. We claim that
+$a(n) = k$.
+
+\emph{Step 1: $k \in T(n)$.} The number $k$ is deficient. All prime factors of
+$n$ exceed $k$, so $\gcd(k,n) = 1$ and
+\[
+  h(kn) = h(k)\,h(n) \ge \frac{c}{k}\cdot\frac{c+1}{c} = \frac{2k}{k} = 2 .
+\]
+
+\emph{Step 2: $h(n) < (B+1)/B$.} By the minimality of $t$ we have
+$h(n_{t-1}) < (c+1)/c$, so
+\[
+  h(n) = h(n_{t-1})\Bigl(1 + \frac1q\Bigr) < \frac{c+1}{c}\cdot\frac{q+1}{q} .
+\]
+It suffices to show that $B(c+1)(q+1) \le c(B+1)q$, that is,
+$B(c+1) \le q\,(c - B)$. This holds because $c - B \ge 2$ by~\eqref{eq:kBc} and
+$q \ge (c+1)^2 > B(c+1)$.
+
+\emph{Step 3: no deficient $k' < k$ lies in $T(n)$.} Let $k' < k$ be deficient.
+Again $\gcd(k',n) = 1$, so by Step~2
+\[
+  h(k'n) = h(k')\,h(n) < h(k')\cdot\frac{B+1}{B}.
+\]
+If $\sigma(k') = 2k'-1$, then by the minimality of $k$ we have $k' = 2^i$ with
+$i \le j$, and
+\[
+  h(k')\cdot\frac{B+1}{B} = 2\cdot\frac{2^{i+1}-1}{2^{i+1}}\cdot\frac{2^{j+1}}{2^{j+1}-1} \le 2 .
+\]
+Otherwise $\sigma(k') \le 2k'-2$, so $h(k') \le 2(k'-1)/k'$, and
+\[
+  h(k')\cdot\frac{B+1}{B} \le 2\cdot\frac{(k'-1)(B+1)}{k'B} \le 2,
+\]
+because $(k'-1)(B+1) \le k'B$ is equivalent to $k'-1 \le B$, which holds
+by~\eqref{eq:kBc}. In both cases $h(k'n) < 2$, so $k' \notin T(n)$.
+
+Steps 1 and 3 give $a(n) = k$. Since $k$ is not $1$, not $3$, and not a power of
+$2$, Conjecture~\ref{conj:one} fails at $n$. By construction $n$ is odd and
+squarefree.
+\end{proof}
+
+\begin{remark}
+The integer $n$ produced by the proof is very large. If there happens to be a
+prime $q$ with $2^{j+1} \le q \le 2k-1$, the same argument shows that already
+$a(q) = k$.
+\end{remark}
+
+\section{The first occurrence of \texorpdfstring{$2^m$}{2\^{}m}}
+
+\begin{proof}[Proof of Theorem~\ref{thm:two}(a)]
+Let $m \ge 1$ and $a(n) = 2^m$. If $n$ is even, then $a(n) \le 3$ by
+Theorem~\ref{thm:structure}(a), so $m = 1$ and $p_1 = 3$. Since $2$ and $4$ are
+deficient, $1, 2 \notin T(2)$ and $a(2) = 3 \neq 2$; hence $n \ge 4 > p_1$.
+
+Now let $n$ be odd. Since $2^{m-1} < a(n)$, we have $2^{m-1} \notin T(n)$, so
+$(2^m - 1)\,\sigma(n) < 2^m n$ by~\eqref{eq:pow2}. Let $q$ be the least prime
+factor of $n$. By Lemma~\ref{lem:sigma}(d), $\sigma(n) \ge n + n/q$, hence
+$(2^m-1)(1 + 1/q) < 2^m$, that is, $q > 2^m - 1$. As $q$ is odd and $2^m$ is
+even, $q > 2^m$. Therefore $p_m \le q \le n$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:two}(b)]
+Let $p = p_m$. By Bertrand's postulate \cite[Theorem 418]{hw} there is a prime
+in the interval $(2^m, 2^{m+1}]$, and $2^{m+1}$ is not prime, so
+$2^m < p < 2^{m+1}$. In particular $p$ is odd and $\sigma(p) = p+1$, so
+by~\eqref{eq:pow2}
+\begin{equation}\label{eq:prime}
+  2^i \in T(p) \iff (2^{i+1}-1)(p+1) \ge 2^{i+1}p \iff 2^{i+1} \ge p+1 .
+\end{equation}
+Taking $i = m$ shows $2^m \in T(p)$, so $a(p) \le 2^m$. By
+Theorem~\ref{thm:structure}(b), $a(p)$ is a power of $2$ or an exotic almost
+perfect number. The latter would be an exotic almost perfect number less than
+$2^m$, which is excluded by hypothesis. So $a(p) = 2^i$ for some $i \le m$, and \eqref{eq:prime} gives
+$2^{i+1} \ge p + 1 > 2^m$, whence $i = m$.
+\end{proof}
+
+Parts (a) and (b) together give Conjecture~\ref{conj:two} for every $m$ such
+that no exotic almost perfect number is less than $2^m$, which completes the
+proof of Corollary~\ref{cor:bound}.
+
+\begin{remark}
+We do not know whether Conjecture~\ref{conj:two} implies
+Conjecture~\ref{conj:ap}. The proof shows that Conjecture~\ref{conj:two} fails
+for a given $m$ exactly when there is an exotic almost perfect number $k$ with
+$(p_m+1)/2 \le k < 2^m$: such a $k$ is coprime to $p_m$ and satisfies
+$h(k p_m) = (2k-1)(p_m+1)/(k p_m) \ge 2$, so $a(p_m) \le k < 2^m$; conversely, an
+exotic value $a(p_m) = k$ must satisfy this inequality.
+\end{remark}
+
+\section{A search for almost perfect numbers}\label{sec:computation}
+
+If $\sigma(k) = 2k-1$ then $\sigma(k)$ is odd, so $k$ is a square or twice a
+square; that is, $k = 2^a b^2$ with $a \ge 0$ and $b$ odd. For such $k$ the
+condition $\sigma(k) = 2k-1$ reads
+\[
+  (2^{a+1}-1)\,\sigma(b^2) = 2^{a+1} b^2 - 1 .
+\]
+We tested this identity for every odd $b$ with $3 \le b \le 10^8$ and every
+$a \ge 0$ with $2^a b^2 \le 10^{16}$, computing $\sigma(b^2)$ from the
+factorization of $b$ obtained with a sieve. There are $170{,}710{,}624$ such
+pairs, and none satisfies the identity. Hence there is no exotic almost perfect
+number $k \le 10^{16}$. By Corollary~\ref{cor:bound}, Conjecture~\ref{conj:one}
+holds for all $n \le 10^{16}$ and Conjecture~\ref{conj:two} holds for all
+$m \le 53$, since $2^{53} < 10^{16}$.
+
+This computation is elementary and we make no claim that the bound $10^{16}$ is
+new or best possible. It is the only part of this paper that has not been
+formally verified; the program is available with the formal proof.
+
+\section{Formal verification}\label{sec:lean}
+
+The results of this paper were formalized in Lean~4 (version 4.36.0) with
+Mathlib (version v4.36.0). The formalization is a single file,
+\lean{A215926.lean}, of about 800 lines, available in the directory
+\lean{a215926} of the repository
+\begin{center}
+\url{https://github.com/Leo309/lean-open-problems}
+\end{center}
+The definitions of $a(n)$, of $p_m$, and of almost perfect numbers, as well as
+the statements of Conjectures~\ref{conj:one}, \ref{conj:two}, and of the open
+question on exotic almost perfect numbers, are copied verbatim from two files
+of~\cite{fc}, namely
+\begin{center}
+\lean{FormalConjectures/OEIS/215926.lean},\\
+\lean{FormalConjectures/Wikipedia/AlmostPerfectNumbers.lean}.
+\end{center}
+The
+file contains no \lean{sorry}, and every theorem depends only on the three
+standard axioms \lean{propext}, \lean{Classical.choice}, and \lean{Quot.sound}.
+The correspondence with the present paper is as follows.
+
+\begin{center}
+\begin{tabular}{ll}
+Result & Lean theorem \\ \hline
+Theorem~\ref{thm:structure}(a) & \lean{a\_even} \\
+Lemma~\ref{lem:key}, Theorem~\ref{thm:structure}(b) & \lean{a\_odd}, \lean{two\_pow\_log\_mem}, \lean{a\_le\_self} \\
+Theorem~\ref{thm:equiv}, ``if'' & \lean{conjecture\_1\_of\_almostPerfect} \\
+Theorem~\ref{thm:equiv}, ``only if'' & \lean{exists\_a\_eq\_of\_exotic}, \lean{almostPerfect\_of\_conjecture\_1} \\
+Theorem~\ref{thm:equiv} & \lean{conjecture\_1\_iff\_almostPerfect} \\
+Theorem~\ref{thm:two}(a) & \lean{nextPrime\_le\_of\_a\_eq} \\
+Theorem~\ref{thm:two}(b) & \lean{a\_nextPrime}, \lean{conjecture\_2\_of\_almostPerfect} \\
+Corollary~\ref{cor:bound} & \lean{conjecture\_1\_of\_bound}, \lean{conjecture\_2\_of\_bound} \\
+\end{tabular}
+\end{center}
+
+The divergence of the sum of the reciprocals of the primes and Bertrand's
+postulate enter through the Mathlib lemmas
+\begin{center}
+\lean{one\_half\_le\_sum\_primes\_ge\_one\_div},\\
+\lean{Nat.exists\_prime\_lt\_and\_le\_two\_mul}.
+\end{center}
+In addition,
+the file proves Conjecture~\ref{conj:one} for $2 \le n < 256$ and
+Conjecture~\ref{conj:two} for $1 \le m \le 8$ unconditionally, by letting the
+Lean kernel check that there is no exotic almost perfect number below $256$
+(\lean{conjecture\_1\_small}, \lean{conjecture\_2\_small}). This is only a
+consistency check of the formal definitions and gives no new information, since
+the table of $a(n)$ for $n \le 10000$ in the OEIS entry already covers a larger
+range.
+Remark~\ref{rem:formula}, the two other remarks, the statement that $n$ is odd
+and squarefree in Theorem~\ref{thm:equiv}, and the search of
+Section~\ref{sec:computation} are not part of the formalization.
+
+\section{Use of artificial intelligence}
+
+% TODO(author): keep this statement accurate. The last sentence describes
+% what you must actually have done before submitting. If you rewrite the text
+% yourself, change "the first draft of the text" accordingly. Add the model
+% version if the venue asks for it.
+The mathematical results of this paper, their proofs, the Lean formalization,
+the search program, and the first draft of the text were produced by Claude, an
+AI system developed by Anthropic, working at the author's request. The link
+between sequence \seqnum{A215926} and almost perfect numbers was found by the AI
+system while it searched for counterexamples to Conjecture~\ref{conj:one}. The
+correctness of the theorems does not rest on the AI system: it rests on the
+proofs given here and on their verification by the Lean kernel. The author has
+checked that the formal statements agree with the definitions in the OEIS and
+in~\cite{fc}, has read the proofs, and takes full responsibility for the
+contents of the paper.
+
+\section{Acknowledgments}
+
+The author thanks the contributors and editors of the OEIS, and the maintainers
+of Mathlib and of the formal-conjectures repository.
+
+\begin{thebibliography}{9}
+
+\bibitem{antalan-dris}
+J. R. M. Antalan and J. A. B. Dris, Some new results on even almost perfect
+numbers which are not powers of two, preprint, 2016. Available at
+\url{https://arxiv.org/abs/1602.04248}.
+
+\bibitem{dris}
+J. A. B. Dris, A criterion for deficient numbers using the abundancy index and
+deficiency functions, preprint, 2013. Available at
+\url{https://arxiv.org/abs/1308.6767}.
+
+\bibitem{fc}
+Google DeepMind, formal-conjectures, a collection of formalized statements of
+conjectures in Lean, 2026. Available at
+\url{https://github.com/google-deepmind/formal-conjectures}.
+
+\bibitem{guy}
+R. K. Guy, \emph{Unsolved Problems in Number Theory}, 3rd edition, Springer,
+2004.
+
+\bibitem{hw}
+G. H. Hardy and E. M. Wright, \emph{An Introduction to the Theory of Numbers},
+6th edition, Oxford University Press, 2008.
+
+\bibitem{kishore78}
+M. Kishore, Odd integers $N$ with five distinct prime factors for which
+$2 - 10^{-12} < \sigma(N)/N < 2 + 10^{-12}$, \emph{Math. Comp.} \textbf{32}
+(1978), 303--309.
+
+\bibitem{kishore81}
+M. Kishore, On odd perfect, quasiperfect, and odd almost perfect numbers,
+\emph{Math. Comp.} \textbf{36} (1981), 583--586.
+
+\bibitem{lean4}
+L. de Moura and S. Ullrich, The Lean 4 theorem prover and programming language,
+in \emph{Automated Deduction -- CADE 28}, Lect. Notes in Comput. Sci.,
+Vol.~12699, Springer, 2021, pp.~625--635.
+
+\bibitem{mathlib}
+The mathlib Community, The Lean mathematical library, in \emph{Proceedings of
+the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs
+(CPP 2020)}, ACM, 2020, pp.~367--381.
+
+\bibitem{oeis}
+OEIS Foundation Inc., The On-Line Encyclopedia of Integer Sequences, 2026.
+Available at \url{https://oeis.org}.
+
+\end{thebibliography}
+
+\bigskip
+\hrule
+\bigskip
+
+\noindent 2020 {\it Mathematics Subject Classification}:
+Primary 11A25; Secondary 11B83, 68V20.
+
+\noindent \emph{Keywords:}
+deficient number, abundant number, almost perfect number, sum of divisors,
+abundancy index, formal proof, Lean.
+
+\bigskip
+\hrule
+\bigskip
+
+\noindent (Concerned with sequences
+\seqnum{A005100},
+\seqnum{A014210},
+\seqnum{A023196}, and
+\seqnum{A215926}.)
+
+\end{document}
