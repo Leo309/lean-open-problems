@@ -7,6 +7,7 @@ are kept here.
 | Directory | Result | Status |
 | --- | --- | --- |
 | [`a215926/`](a215926/) | The first conjecture in OEIS A215926 is equivalent to the conjecture that every almost perfect number is a power of 2; the second conjecture follows from it | Lean-verified. Numerical search to 10^16 not formalized |
+| [`a017666/`](a017666/) | Coleman's conjecture in OEIS A017666 (if the denominator of σ(n)/n is practical, then n is practical) is equivalent to the nonexistence of odd multiply perfect numbers | Lean-verified |
 
 ## Checking the proofs
 
@@ -16,6 +17,7 @@ All results share one Lean project, pinned to Lean 4.36.0 and Mathlib v4.36.0.
 lake exe cache get   # optional, downloads prebuilt Mathlib
 lake build           # builds every result
 lake build A215926   # builds one result
+lake build A017666
 ```
 
 A result is accepted here only if its file builds with no `sorry` and its main

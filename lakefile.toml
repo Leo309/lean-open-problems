@@ -1,5 +1,5 @@
 name = "lean-open-problems"
-defaultTargets = ["A215926"]
+defaultTargets = ["A215926", "A017666"]
 
 [[require]]
 name = "mathlib"
@@ -10,3 +10,7 @@ rev = "v4.36.0"
 [[lean_lib]]
 name = "A215926"
 srcDir = "a215926"
+
+[[lean_lib]]
+name = "A017666"
+srcDir = "a017666"
