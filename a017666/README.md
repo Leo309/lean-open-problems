@@ -24,6 +24,10 @@ perfect number `N > 1` exists is a classical open problem; the case
   there is no odd multiply perfect number `N` with `1 < N ≤ X`.
 - The special case mentioned in the OEIS comment (if `a(n)` is a power of 2,
   then `n` is practical) is equivalent to the same statement.
+- Coleman's conjecture at [OEIS A007691](https://oeis.org/A007691) (2013),
+  that every multiply perfect number is practical, is also equivalent to the
+  same statement. So the conjectures at A017666 and at A007691 are equivalent
+  to each other.
 
 So the conjecture is not settled here: it is shown to be exactly as hard as a
 known open problem. One direction was already noted in the OEIS comment (an odd
@@ -52,7 +56,7 @@ while `N` is not practical because `2` is not a sum of distinct odd divisors.
 
 | File | Content |
 | --- | --- |
-| `A017666.lean` | Lean 4 formalization of all the results above (about 450 lines) |
+| `A017666.lean` | Lean 4 formalization of all the results above (about 470 lines) |
 
 ## Checking the proof
 
@@ -78,6 +82,7 @@ definition of subset sums written out. Main theorems:
 | `counterexample_structure` | a counterexample has an odd multiply perfect unitary divisor `N > 1` |
 | `coleman_bounded` | the same equivalence restricted to numbers `≤ X` |
 | `coleman_dyadic_iff_noOddMultiperfect` | the power-of-2 special case is equivalent to the same statement |
+| `multiperfectPractical_iff_noOddMultiperfect` | every multiply perfect number is practical ⟺ no odd `N > 1` with `N ∣ σ(N)` |
 | `SC_of_stewart` | sufficiency half of Stewart's criterion for practical numbers |
 | `practical_prime_le` | necessity half, in the form used here |
 

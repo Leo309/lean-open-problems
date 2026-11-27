@@ -24,6 +24,8 @@ This file proves, with no `sorry`:
   number `N` with `1 < N ≤ X`;
 * `coleman_dyadic_iff_noOddMultiperfect`: the special case singled out in the OEIS comment
   (`a(n)` a power of 2 implies `n` practical) is equivalent to the same statement;
+* `multiperfectPractical_iff_noOddMultiperfect`: Coleman's companion conjecture at OEIS
+  A007691 (every multiply perfect number is practical) is equivalent to the same statement;
 * on the way, the sufficiency half of Stewart's structure theorem for practical numbers
   (`SC_of_stewart`): if every prime `p ∣ n` satisfies `p ≤ 1 + σ(part of n with primes < p)`,
   then every `x ≤ σ(n)` is a sum of distinct divisors of `n`.
@@ -464,9 +466,29 @@ theorem coleman_dyadic_iff_noOddMultiperfect :
   · intro hno n hn ⟨k, hk⟩
     exact (coleman_iff_noOddMultiperfect.2 hno) n hn (hk ▸ practical_two_pow k)
 
+/-- Coleman's conjecture at OEIS A007691 (2013): every multiply perfect number is practical. -/
+def MultiperfectPracticalConjecture : Prop :=
+  ∀ n : ℕ, 0 < n → n ∣ ∑ d ∈ n.divisors, d → A5153 n
+
+/-- Coleman's conjecture at A007691 is equivalent to the same statement: every multiply
+perfect number is practical iff there is no odd multiply perfect number greater than 1. In
+particular the conjectures at A007691 and at A017666 are equivalent to each other. -/
+theorem multiperfectPractical_iff_noOddMultiperfect :
+    MultiperfectPracticalConjecture ↔ NoOddMultiperfect := by
+  constructor
+  · intro hC N hodd hdiv
+    by_contra h1
+    exact not_practical_of_odd hodd h1 (hC N hodd.pos hdiv)
+  · intro hno n hn hdiv
+    have haN : a n = 1 := by
+      unfold a
+      rw [if_neg (by omega : ¬ _ = 0), Nat.gcd_eq_left hdiv, Nat.div_self hn]
+    exact (coleman_iff_noOddMultiperfect.2 hno) n hn (haN ▸ practical_one)
+
 end A017666
 
 #print axioms A017666.coleman_iff_noOddMultiperfect
 #print axioms A017666.coleman_bounded
 #print axioms A017666.counterexample_structure
 #print axioms A017666.coleman_dyadic_iff_noOddMultiperfect
+#print axioms A017666.multiperfectPractical_iff_noOddMultiperfect
